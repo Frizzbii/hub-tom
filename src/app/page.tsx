@@ -34,9 +34,9 @@ export default function Home() {
         </header>
 
         {/* Grille de projets */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2" >
           {PROJECTS.map((project, index) => (
-            <div 
+            <Link href={project.link}
               key={index}
               className="group relative p-8 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-blue-500/50 transition-all duration-300"
             >
@@ -67,9 +67,9 @@ export default function Home() {
                 href={project.link}
                 className="inline-flex items-center text-sm font-semibold text-white group-hover:translate-x-1 transition-transform"
               >
-                Accéder à l'app <span className="ml-2">→</span>
+                Access the app <span className="ml-2">→</span>
               </Link>
-            </div>
+            </Link>
           ))}
         </div>
 
