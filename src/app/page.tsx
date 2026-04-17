@@ -26,7 +26,7 @@ export default function Home() {
         {/* Header */}
         <header className="mb-16">
           <h1 className="text-5xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Project Hub
+            Tom's apps
           </h1>
           <p className="text-slate-400 mt-4 text-lg max-w-2xl">
             Welcome to my app hub.
