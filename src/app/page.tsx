@@ -12,7 +12,7 @@ const PROJECTS = [
   {
     title: "Video Games Tier List",
     description: "Make a tier list of the video games you've played this year!",
-    link: "#",
+    link: "/tierlists",
     status: "In developement",
     tags: ["Node.js", "React", "Next.js", "Tailwind"]
   },
