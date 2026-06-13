@@ -7,6 +7,7 @@ export function useTouchDrag(onDrop: (game: Game, tierId: string) => void) {
     const clone = useRef<HTMLElement | null>(null)
 
     function onTouchStart(e: React.TouchEvent, game: Game, tierId: string | null = null) {
+        e.preventDefault()
         dragGame.current = game
         dragSourceTierId.current = tierId
 
@@ -23,6 +24,7 @@ export function useTouchDrag(onDrop: (game: Game, tierId: string) => void) {
     }
 
     function onTouchMove(e: React.TouchEvent) {
+        e.preventDefault()
         if (!clone.current) return
         const touch = e.touches[0]
         clone.current.style.left = touch.clientX - 48 + 'px'
@@ -30,6 +32,7 @@ export function useTouchDrag(onDrop: (game: Game, tierId: string) => void) {
     }
 
     function onTouchEnd(e: React.TouchEvent) {
+        e.preventDefault()
         if (clone.current) {
             document.body.removeChild(clone.current)
             clone.current = null
