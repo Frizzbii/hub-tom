@@ -4,7 +4,6 @@ import { TierList, TierWithEntries } from '@/types/database'
 import GameSearch from '@/components/gamesearch'
 import { Game } from '@/types/game'
 import { useState } from 'react'
-import { useTouchDrag } from '@/hooks/useTouchDrag'
 
 
 type Props = {
@@ -38,26 +37,23 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
 
     function onDrop(e: React.DragEvent, tierId: string) {
         const game: Game = {
-            id: parseInt(e.dataTransfer.getData('id')),
-            name: e.dataTransfer.getData('name'),
-            imageUrl: e.dataTransfer.getData('imageUrl') || null
+            id : parseInt(e.dataTransfer.getData('id')),
+            name : e.dataTransfer.getData('name'),
+            imageUrl : e.dataTransfer.getData('imageUrl') || null
         }
-        const prevTierId = e.dataTransfer.getData('tierId') || null
-        handleDrop(game, tierId, prevTierId)
-    }
+        
+        const prevTierId = e.dataTransfer.getData('tierId') || localTiers.find(tier => tier.games.some(g => g.id === game.id))?.id || null
 
-    function handleDrop(game: Game, tierId: string, prevTierId?: string | null) {
-        const sourceTierId = prevTierId ?? localTiers.find(t => t.games.some(g => g.id === game.id))?.id ?? null
-        if (tierId === sourceTierId) return
-        setLocalTiers(prev => prev.map(tier => {
-            if (tierId === 'remove') return { ...tier, games: tier.games.filter(g => g.id !== game.id) }
-            if (tier.id === tierId) return { ...tier, games: [...tier.games, game] }
-            if (tier.id === sourceTierId) return { ...tier, games: tier.games.filter(g => g.id !== game.id) }
+        if ( tierId === prevTierId ) return 
+
+        setLocalTiers( prev => prev.map( tier => {
+            if ( tier.id === tierId ) return { ...tier, games: [ ...tier.games, game ] }
+            if ( tierId === "remove" ) return { ...tier, games: tier.games.filter( g => g.id !== game.id ) }
+            if ( tier.id === prevTierId ) return { ...tier, games: tier.games.filter( g => g.id !== game.id ) }
+            
             return tier
         }))
     }
-
-    const { onTouchStart, onTouchMove, onTouchEnd } = useTouchDrag((game, tierId) => handleDrop(game, tierId))
     
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
@@ -74,7 +70,6 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
 
                         { /* Games in this tier */ }
                         <div className="flex flex-wrap gap-2 p-2 bg-slate-800 flex-1"
-                            data-tier-id={ tier.id }
                             onDragOver={ ( e ) => e.preventDefault() }
                             onDrop={ ( e ) => onDrop( e, tier.id ) }>
                             { tier.games.length === 0 
@@ -89,9 +84,6 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
                                                 e.dataTransfer.setData('imageUrl', game.imageUrl ?? '')
                                                 e.dataTransfer.setData('tierId', tier.id)
                                             }}
-                                            onTouchStart={(e) => onTouchStart(e, game, tier.id)}
-                                            onTouchMove={onTouchMove}
-                                            onTouchEnd={onTouchEnd}
                                             className="relative w-24 h-24 rounded overflow-hidden cursor-pointer group border border-slate-600 hover:border-blue-400 transition-colors"
                                         >
                                             { game.imageUrl
@@ -111,11 +103,8 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
                     </div>
                 ))}
             </div>
-            <div className="mt-6"
-                data-tier-id="remove"
-                onDragOver={ ( e ) => e.preventDefault() }
-                onDrop={ ( e ) => onDrop( e, 'remove' ) }>
-                <GameSearch onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} />
+            <div className="mt-6" onDragOver={ ( e ) => e.preventDefault() } onDrop={ ( e ) => onDrop( e, "remove" ) }>
+                <GameSearch />
             </div>
         </div>
     )

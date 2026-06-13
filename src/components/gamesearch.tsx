@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Game } from '@/types/game'
 
-
-type Props = {
-    onTouchStart: (e: React.TouchEvent, game: Game, tierId: string | null) => void
-    onTouchMove: (e: React.TouchEvent) => void
-    onTouchEnd: (e: React.TouchEvent) => void
-}
-
-
-export default function GameSearch({ onTouchStart, onTouchMove, onTouchEnd }: Props) {
+export default function GameSearch() {
     const [search, setSearch] = useState('')
     const [games, setGames] = useState<Game[]>([])
     const [loading, setLoading] = useState(false)
@@ -54,9 +46,6 @@ export default function GameSearch({ onTouchStart, onTouchMove, onTouchEnd }: Pr
                             e.dataTransfer.setData('name', game.name)
                             e.dataTransfer.setData('imageUrl', game.imageUrl ?? '')
                         }}
-                        onTouchStart={(e) => onTouchStart(e, game, null)}
-                        onTouchMove={onTouchMove}
-                        onTouchEnd={onTouchEnd}
                         className="relative w-24 h-24 rounded overflow-hidden cursor-pointer group border border-slate-600 hover:border-blue-400 transition-colors"
                     >
                         { game.imageUrl
