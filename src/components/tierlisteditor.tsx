@@ -34,9 +34,11 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
             games: []
         }))
     )
+    const [dragOverTierId, setDragOverTierId] = useState<string | null>(null)
+    const [dragOverIndex, setDragOverIndex] = useState<number>(0)
 
-    function onDrop(e: React.DragEvent, tierId: string) {
-        const game: Game = {
+    function onDrop(e : React.DragEvent, tierId : string) {
+        const game : Game = {
             id : parseInt(e.dataTransfer.getData('id')),
             name : e.dataTransfer.getData('name'),
             imageUrl : e.dataTransfer.getData('imageUrl') || null
@@ -47,12 +49,44 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
         if ( tierId === prevTierId ) return 
 
         setLocalTiers( prev => prev.map( tier => {
-            if ( tier.id === tierId ) return { ...tier, games: [ ...tier.games, game ] }
-            if ( tierId === "remove" ) return { ...tier, games: tier.games.filter( g => g.id !== game.id ) }
-            if ( tier.id === prevTierId ) return { ...tier, games: tier.games.filter( g => g.id !== game.id ) }
+            if ( tier.id === tierId ) {
+                const cleanGames = tier.games.filter( g => g.id !== game.id )
+                const updatedGames = [ ...cleanGames.slice( 0, dragOverIndex ), game, ...cleanGames.slice( dragOverIndex ) ]
+                return { ...tier, games: updatedGames }
+            }
+
+            if ( tierId === "remove" )
+                return { ...tier, games: tier.games.filter( g => g.id !== game.id ) }
+
+            if (tier.id === prevTierId)
+                return { ...tier, games: tier.games.filter(g => g.id !== game.id ) }
             
-            return tier
+            return tier;
         }))
+    }
+
+    function onDragOver(e : React.DragEvent, tier : LocalTier ) {
+        e.preventDefault()
+        
+        const positionX = e.clientX
+        setDragOverTierId( tier.id )
+
+        const container = e.currentTarget as HTMLElement
+        const children = Array.from(container.children) as HTMLElement[]
+
+        let closestIndex = tier.games.length
+
+        for (let i = 0; i < children.length; i++) {
+            const box = children[i].getBoundingClientRect()
+            const boxCenterX = box.left + box.width / 2
+
+            if (positionX < boxCenterX) {
+                closestIndex = i
+                break
+            }
+        }
+
+        setDragOverIndex( closestIndex )
     }
     
     return (
@@ -70,7 +104,7 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
 
                         { /* Games in this tier */ }
                         <div className="flex flex-wrap gap-2 p-2 bg-slate-800 flex-1"
-                            onDragOver={ ( e ) => e.preventDefault() }
+                            onDragOver={ ( e ) => onDragOver( e, tier ) }
                             onDrop={ ( e ) => onDrop( e, tier.id ) }>
                             { tier.games.length === 0 
                                 ? ( <span className="text-slate-500 text-sm self-center px-2">Drop games here</span> )
