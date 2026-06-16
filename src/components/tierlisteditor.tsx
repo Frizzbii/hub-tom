@@ -3,7 +3,11 @@
 import { TierList, TierWithEntries } from '@/types/database'
 import GameSearch from '@/components/gamesearch'
 import { Game } from '@/types/game'
-import { useState } from 'react'
+import React, { MouseEventHandler, useState } from 'react'
+import { auth } from "@clerk/nextjs/server"
+import { createServerSupabaseClient } from '@/lib/supabase'
+import { redirect } from 'next/navigation'
+import { saveTierList } from '@/app/actions'
 
 
 type Props = {
@@ -11,9 +15,10 @@ type Props = {
     tiers : TierWithEntries[]
 }
 
-type LocalTier = {
+export type LocalTier = {
     id : string
     label : string
+    rank : number
     games : Game[]
 }
 
@@ -27,13 +32,26 @@ const TIER_COLORS: Record<string, string> = {
 
 
 export default function TierListEditor( { tierlist, tiers }: Props ) {
-    const [localTiers, setLocalTiers] = useState<LocalTier[]>(
-        tiers.map(tier => ({
-            id: tier.id,
-            label: tier.label,
-            games: []
-        }))
-    )
+    const [localTiers, setLocalTiers] = useState<LocalTier[]>(() => {
+        return (tiers || []).map(tier => {
+            const existingGames = tier.tierentry && Array.isArray(tier.tierentry)
+                ? [...tier.tierentry]
+                    .sort((a: any, b: any) => a.position - b.position)
+                    .map((entry: any) => ({
+                        id: parseInt(entry.game.id),
+                        name: entry.game.name,
+                        imageUrl: entry.game.imageUrl
+                    }))
+                : []
+
+            return {
+                id: tier.id,
+                label: tier.label,
+                rank: tier.rank,
+                games: existingGames
+            }
+        })
+    })
     const [dragOverTierId, setDragOverTierId] = useState<string | null>(null)
     const [dragOverIndex, setDragOverIndex] = useState<number>(0)
 
@@ -88,6 +106,10 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
 
         setDragOverIndex( closestIndex )
     }
+
+    async function handleSave() {
+        await saveTierList( tierlist , localTiers )
+    }
     
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
@@ -140,6 +162,7 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
             <div className="mt-6" onDragOver={ ( e ) => e.preventDefault() } onDrop={ ( e ) => onDrop( e, "remove" ) }>
                 <GameSearch />
             </div>
+            <button onClick={ handleSave } className="mt-5 p-2 bg-slate-800 hover:bg-slate-600 hover:cursor-pointer items-center rounded border border-slate-700">Save Tierlist</button>
         </div>
     )
 }
