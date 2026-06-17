@@ -37,21 +37,13 @@ export default async function TierListPage( { params }: Props ) {
             rank,
             tierentry (
                 position,
-                game:game!game_id (
-                    id,
-                    name,
-                    imageUrl
-                )
+                game_id,
+                name,
+                image_url
             )
         `)
         .eq('tierlist_id', id)
         .order('rank', { ascending: true })
-    
-    console.log("--- DEBUGGING TIERS FETCH ---")
-console.log("Looking for tierlist_id:", id)
-console.log("Raw Tiers Data:", tiers)
-console.log("Database Error (if any):", tiersError)
-console.log("-----------------------------")
 
     if (tiersError || !tiers) {
         return <div className="p-10 text-red-500">Error loading tiers.</div>

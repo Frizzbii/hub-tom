@@ -14,11 +14,13 @@ export type Tier = {
 }
 
 export type TierEntry = {
-    id: string | null
-    created_at: string | null
+    id: string
+    created_at: string
     tier_id: string
-    game_id: number
+    game_id: string
     position: number
+    name: string
+    image_url: string | null
 }
 
 export type TierWithEntries = Tier & {

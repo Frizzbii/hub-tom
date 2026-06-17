@@ -3,10 +3,7 @@
 import { TierList, TierWithEntries } from '@/types/database'
 import GameSearch from '@/components/gamesearch'
 import { Game } from '@/types/game'
-import React, { MouseEventHandler, useState } from 'react'
-import { auth } from "@clerk/nextjs/server"
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { redirect } from 'next/navigation'
+import React, { useState } from 'react'
 import { saveTierList } from '@/app/actions'
 
 
@@ -38,9 +35,9 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
                 ? [...tier.tierentry]
                     .sort((a: any, b: any) => a.position - b.position)
                     .map((entry: any) => ({
-                        id: parseInt(entry.game.id),
-                        name: entry.game.name,
-                        imageUrl: entry.game.imageUrl
+                        id: parseInt(entry.game_id),
+                        name: entry.name,
+                        imageUrl: entry.image_url
                     }))
                 : []
 
@@ -64,20 +61,29 @@ export default function TierListEditor( { tierlist, tiers }: Props ) {
         
         const prevTierId = e.dataTransfer.getData('tierId') || localTiers.find(tier => tier.games.some(g => g.id === game.id))?.id || null
 
-        if ( tierId === prevTierId ) return 
+        if (tierId === "remove") {
+            setLocalTiers(prev => prev.map(tier => ({
+                ...tier,
+                games: tier.games.filter(g => g.id !== game.id)
+            })))
+            return
+        }
 
-        setLocalTiers( prev => prev.map( tier => {
-            if ( tier.id === tierId ) {
-                const cleanGames = tier.games.filter( g => g.id !== game.id )
-                const updatedGames = [ ...cleanGames.slice( 0, dragOverIndex ), game, ...cleanGames.slice( dragOverIndex ) ]
+        setLocalTiers(prev => prev.map(tier => {
+            if (tier.id === tierId) {
+                const cleanGames = tier.games.filter(g => g.id !== game.id)
+                
+                const updatedGames = [
+                    ...cleanGames.slice(0, dragOverIndex),
+                    game,
+                    ...cleanGames.slice(dragOverIndex)
+                ]
                 return { ...tier, games: updatedGames }
             }
 
-            if ( tierId === "remove" )
-                return { ...tier, games: tier.games.filter( g => g.id !== game.id ) }
-
-            if (tier.id === prevTierId)
-                return { ...tier, games: tier.games.filter(g => g.id !== game.id ) }
+            if (tier.id === prevTierId && tierId !== prevTierId) {
+                return { ...tier, games: tier.games.filter(g => g.id !== game.id) }
+            }
             
             return tier;
         }))
